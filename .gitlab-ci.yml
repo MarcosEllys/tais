@@ -9,28 +9,29 @@ variables:
   BOT_LATEST_IMAGE: $CI_REGISTRY_IMAGE/bot:latest
   ACTIONS_LATEST_IMAGE: $CI_REGISTRY_IMAGE/actions:latest
   WEB_LATEST_IMAGE: $CI_REGISTRY_IMAGE/web:latest
-  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
 cache:
+  untracked: true
+  key: "$CI_PROJECT_ID"
   paths:
-    - .cache/pip/
-    - venv/
+    - .pip/
 
 .prepare_tests_dependencies: &tests_dependencies
   before_script:
+    - mkdir -p .pip
     - echo $CI_PROJECT_DIR
     - python -V # Print out python version for debugging
-    - pip -V
     - python -m pip install --upgrade pip
-    - pip install virtualenv
-    - virtualenv venv
-    - source venv/bin/activate
+    - pip -V
+    #- pip install virtualenv
+    #- virtualenv venv
+    #- source venv/bin/activate
+    - pip --cache-dir=.pip install -r dev.requirements.txt
 
 test style:
   <<: *tests_dependencies
   stage: test
   script:
-    - pip install -r dev.requirements.txt
     - flake8 --exclude venv
 
 run dataset validator:
